@@ -1,0 +1,14 @@
+streamlit
+pymupdf
+PyPDF2
+pillow
+pandas
+numpy
+pydantic
+plotly
+requests
+# optional
+streamlit-lottie
+streamlit-extras
+pdf2image
+pytesseract
