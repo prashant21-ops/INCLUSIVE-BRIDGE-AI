@@ -4,7 +4,7 @@ import datetime
 import io
 import base64
 import hashlib
-import fitz  # PyMuPDF
+import fitz  
 import PyPDF2
 import pandas as pd
 import numpy as np
