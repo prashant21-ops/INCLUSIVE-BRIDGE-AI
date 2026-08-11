@@ -1,11 +1,11 @@
-# corrected_app.py
+
 import os
 import re
 import datetime
 import io
 import base64
 import hashlib
-import fitz  # PyMuPDF
+import fitz 
 import PyPDF2
 import pandas as pd
 import numpy as np
@@ -108,7 +108,6 @@ def load_lottieurl(url: str):
         return None
 
 # --- Background helpers (turtle + gradient fallback) ---
-# FIXED: Added missing image utilities
 def pil_image_to_data_uri(img: Image.Image) -> str:
     buffered = io.BytesIO()
     img.save(buffered, format="PNG")
@@ -143,7 +142,6 @@ def set_streamlit_background(width=1200, height=800, opacity=0.12):
     """
     st.markdown(css, unsafe_allow_html=True)
 
-# FIXED: Added missing celebration function
 def trigger_celebration():
     st.toast("Decision Logged: Candidate Recommended! 🎉", icon="✅")
     st.balloons()
@@ -305,6 +303,9 @@ def log_decision(candidate_id, role, decision):
 st.title("InclusiveBridge AI")
 st.caption("Redefining hiring with fairness at the core.")
 
+# Default initialization to prevent NameError if the sidebar fails to load
+bg_mode = "Gradient (safe for cloud)"
+
 with st.sidebar:
     if st_lottie:
         lottie_hello = load_lottieurl("https://assets9.lottiefiles.com/packages/lf20_M9p23l.json")
@@ -312,7 +313,7 @@ with st.sidebar:
             st_lottie(lottie_hello, height=200, key="hello")
     st.divider()
     
-    # FIXED: Added definition for bg_mode
+    # Selection properly overrides the default
     bg_mode = st.selectbox("Background Render Mode", ["Gradient (safe for cloud)", "Default"])
     
     demo_choice = st.radio("Load a test persona or upload a resume:", [
