@@ -5,7 +5,7 @@ import datetime
 import io
 import base64
 import hashlib
-import fitz 
+import fitz
 import PyPDF2
 import pandas as pd
 import numpy as np
@@ -107,41 +107,8 @@ def load_lottieurl(url: str):
     except Exception:
         return None
 
-# --- Background helpers (turtle + gradient fallback) ---
-def pil_image_to_data_uri(img: Image.Image) -> str:
-    buffered = io.BytesIO()
-    img.save(buffered, format="PNG")
-    img_str = base64.b64encode(buffered.getvalue()).decode()
-    return f"data:image/png;base64,{img_str}"
 
-def generate_gradient_image(width=1200, height=800) -> Image.Image:
-    img = Image.new('RGB', (width, height))
-    draw = ImageDraw.Draw(img)
-    for y in range(height):
-        # Slate/Dark Blue subtle gradient
-        r = int(15 + (20 * (y / height)))
-        g = int(23 + (25 * (y / height)))
-        b = int(42 + (30 * (y / height)))
-        draw.line([(0, y), (width, y)], fill=(r, g, b))
-    return img
-
-def generate_turtle_image(width=1200, height=800) -> Image.Image:
-    # Turtle is not thread-safe for Streamlit cloud. Returning a safe gradient fallback.
-    return generate_gradient_image(width, height)
-
-def get_background_data_uri(width=1200, height=800):
-    return pil_image_to_data_uri(generate_turtle_image(width, height))
-
-def set_streamlit_background(width=1200, height=800, opacity=0.12):
-    data_uri = get_background_data_uri(width, height)
-    css = f"""
-    <style>
-    .stApp {{ background-image: url("{data_uri}"); background-size: cover; background-position: center; background-attachment: fixed; }}
-    .stApp::before {{ content: ""; position: fixed; inset: 0; background: rgba(15,23,42,{opacity}); pointer-events: none; }}
-    </style>
-    """
-    st.markdown(css, unsafe_allow_html=True)
-
+# FIXED: Added missing celebration function
 def trigger_celebration():
     st.toast("Decision Logged: Candidate Recommended! 🎉", icon="✅")
     st.balloons()
@@ -207,7 +174,8 @@ class Match(BaseModel):
 JOBS = [
     {"title": "Junior Data Analyst", "reqs": "Python, Data Cleaning, Excel, SQL, Problem Solving", "acc": "Remote work allowed, Screen-reader compatibility"},
     {"title": "Customer Success Lead", "reqs": "Empathy, Communication, Troubleshooting, CRM, Conflict Resolution", "acc": "Flexible hours, Caregiver-friendly scheduling"},
-    {"title": "Front-End Apprentice", "reqs": "HTML, CSS, willingness to learn, basic design sense, teamwork", "acc": "Mentorship program included, Asynchronous check-ins"}
+    {"title": "Front-End Apprentice", "reqs": "HTML, CSS, willingness to learn, basic design sense, teamwork", "acc": "Mentorship program included, Asynchronous check-ins"},
+    {"title":"Full Stack Developer","reqs":"HTML,CSS3,React,Mern Stack,Hern Stack,problem solving-stamina,strong communication skills","acc":"Internship program included,soft skills"}
 ]
 
 # --- Utility functions ---
@@ -227,6 +195,7 @@ def get_missing_skills(job_title: str) -> List[str]:
     if "Data" in job_title: return ["Advanced SQL Joins", "Pandas Basics"]
     if "Front-End" in job_title: return ["React Fundamentals", "CSS Grid"]
     if "Success" in job_title: return ["Zendesk / CRM Software", "SaaS Metrics"]
+    if "stack" in job_title: return ["MVC,Jest,Mocha,Tanstack Query"]
     return []
 
 # --- AI matching ---
@@ -303,9 +272,6 @@ def log_decision(candidate_id, role, decision):
 st.title("InclusiveBridge AI")
 st.caption("Redefining hiring with fairness at the core.")
 
-# Default initialization to prevent NameError if the sidebar fails to load
-bg_mode = "Gradient (safe for cloud)"
-
 with st.sidebar:
     if st_lottie:
         lottie_hello = load_lottieurl("https://assets9.lottiefiles.com/packages/lf20_M9p23l.json")
@@ -313,7 +279,6 @@ with st.sidebar:
             st_lottie(lottie_hello, height=200, key="hello")
     st.divider()
     
-    # Selection properly overrides the default
     bg_mode = st.selectbox("Background Render Mode", ["Gradient (safe for cloud)", "Default"])
     
     demo_choice = st.radio("Load a test persona or upload a resume:", [
@@ -322,17 +287,6 @@ with st.sidebar:
         "Persona B: Neha (7-year Career Break, Caregiver)",
         "Persona C: Prashant (Rural Graduate, Vocational Training)"
     ])
-
-# Background rendering
-if bg_mode == "Gradient (safe for cloud)":
-    gradient_uri = pil_image_to_data_uri(generate_gradient_image(1400, 900))
-    st.markdown(
-        f"""<style>
-        .stApp {{ background-image: url("{gradient_uri}"); background-size: cover; background-position: center; background-attachment: fixed; }}
-        .stApp::before {{ content: ""; position: fixed; inset: 0; background: rgba(15,23,42,0.12); pointer-events: none; }}
-        </style>""", unsafe_allow_html=True)
-else:
-    set_streamlit_background(width=1400, height=900, opacity=0.12)
 
 # Main logic
 raw_text = ""
@@ -348,7 +302,7 @@ elif "Prashant" in demo_choice:
     raw_text = "Completed vocational training in electrical repair. Good at troubleshooting circuits and fixing broken systems logically."
 
 if raw_text:
-    if st.button("🚀 Run AI Discovery & Match"):
+    if st.button("Run AI Discovery & Match"):
         st.session_state.engine_run = True
 
     if st.session_state.engine_run:
@@ -444,7 +398,7 @@ if raw_text:
             st.divider()
 
             # Interview Readiness Coach
-            st.markdown("#### 🎤 Interview Readiness Coach")
+            st.markdown("####  Interview Readiness Coach")
             st.markdown("Practice questions tailored to the role and candidate background:")
             # Generate role-aware sample questions
             def generate_questions(role_title: str, candidate_text: str) -> List[str]:
